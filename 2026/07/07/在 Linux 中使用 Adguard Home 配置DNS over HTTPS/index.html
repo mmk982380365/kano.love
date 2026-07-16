@@ -1,0 +1,54 @@
+<!DOCTYPE html><html lang="[&quot;zh-CN&quot;,&quot;en&quot;,&quot;default&quot;]"><head><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content=""><title>在 Linux 中使用 Adguard Home 配置DNS over HTTPS | Yuuki</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=1.0.0"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/normalize.css/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/pure-min.min.css"><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/npm/purecss/build/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script><link rel="icon" mask="" sizes="any" href="/favicon.ico"><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"><script type="text/javascript" src="//cdn.jsdelivr.net/npm/clipboard/dist/clipboard.min.js"></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.js"></script><link rel="stylesheet" href="//cdn.jsdelivr.net/gh/codeseven/toastr/build/toastr.min.css"><meta name="generator" content="Hexo 7.3.0"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">在 Linux 中使用 Adguard Home 配置DNS over HTTPS</h1><a id="logo" href="/.">Yuuki</a><p class="description"></p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">在 Linux 中使用 Adguard Home 配置DNS over HTTPS</h1><div class="post-meta">2026-07-07<span> | </span><span class="category"><a href="/categories/Linux/">Linux</a></span></div><div class="post-content"><h1 id="在-Linux-中使用-Adguard-Home-配置DNS-over-HTTPS"><a href="#在-Linux-中使用-Adguard-Home-配置DNS-over-HTTPS" class="headerlink" title="在 Linux 中使用 Adguard Home 配置DNS over HTTPS"></a>在 Linux 中使用 Adguard Home 配置DNS over HTTPS</h1><h2 id="前置"><a href="#前置" class="headerlink" title="前置"></a>前置</h2><ol>
+<li>docker；</li>
+<li>acme.sh(可选)；</li>
+<li>自定义域名；</li>
+</ol>
+<h2 id="使用-Docker-启动-Adguard-Home"><a href="#使用-Docker-启动-Adguard-Home" class="headerlink" title="使用 Docker 启动 Adguard Home"></a>使用 Docker 启动 Adguard Home</h2><ol>
+<li><p>在选定的目录中（如：<code>/opt/adguard_home/</code>）创建 docker-compose.yml 文件，内容如下：</p>
+ <figure class="highlight yml"><figcaption><span>docker-compose.yml</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line"><span class="attr">adguard-web:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">adguard/adguardhome:latest</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;/opt/adguard_home/work:/opt/adguardhome/work&quot;</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;/opt/adguard_home/conf:/opt/adguardhome/conf&quot;</span></span><br><span class="line">    <span class="comment"># 如果使用acme.sh的方式生成的SSL证书，可以在此处将证书目录映射至容器目录中，并在Adguard Home管理界面中配置该ssl证书</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">&quot;&lt;域名证书所在目录&gt;:/opt/ssl&quot;</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">    <span class="bullet">-</span> <span class="string">GENERIC_TIMEZONE=Asia/Shanghai</span></span><br><span class="line">    <span class="attr">network_mode:</span> <span class="string">host</span></span><br></pre></td></tr></table></figure>
+
+<p> 需要修改 <code>&lt;域名证书所在目录&gt;</code> 内容。</p>
+</li>
+<li><p>使用 <code>docker compose up -d</code> 启动容器。</p>
+</li>
+</ol>
+<h2 id="初始化-Adguard-Home"><a href="#初始化-Adguard-Home" class="headerlink" title="初始化 Adguard Home"></a>初始化 Adguard Home</h2><ol>
+<li><p>使用浏览器打开 Adguard Home 的初始化页面 <a target="_blank" rel="noopener" href="http://127.0.0.1:3000/">http://127.0.0.1:3000</a>。</p>
+</li>
+<li><p>开始设置。</p>
+</li>
+</ol>
+<p><img src="/assets/adguard_install_1.png" alt="Step 2"></p>
+<ol start="3">
+<li>配置网页管理界面、DNS服务器的监听地址和端口号（端口号可以修改为其他端口，以避免占用）。</li>
+</ol>
+<p><img src="/assets/adguard_install_2.png" alt="Step 3"></p>
+<ol start="4">
+<li>设置网页管理界面的账户名及账户密码。</li>
+</ol>
+<p><img src="/assets/adguard_install_3.png" alt="Step 4"></p>
+<ol start="5">
+<li>点击下一步继续配置。</li>
+</ol>
+<p><img src="/assets/adguard_install_4.png" alt="Step 5"></p>
+<ol start="6">
+<li>点击打开仪表盘进入网页管理界面。</li>
+</ol>
+<p><img src="/assets/adguard_install_5.png" alt="Step 6"></p>
+<h2 id="配置DNS-over-HTTPS"><a href="#配置DNS-over-HTTPS" class="headerlink" title="配置DNS over HTTPS"></a>配置DNS over HTTPS</h2><ol>
+<li>登录进入网页管理界面，在 <code>设置-DNS设置</code> 中设置上游DNS服务器。</li>
+</ol>
+<p><img src="/assets/adguard_settings_1.png" alt="Step 1"></p>
+<ol start="2">
+<li>设置Bootstrap DNS 服务器，点击应用保存设置。</li>
+</ol>
+<p><img src="/assets/adguard_settings_2.png" alt="Step 2"></p>
+<ol start="3">
+<li>在 <code>设置-加密设置</code> 中，选中 <code>启用加密（HTTPS、DNS-over-HTTPS、DNS-over-TLS）</code> 选项，在服务器名称中填写你的域名。</li>
+</ol>
+<p><img src="/assets/adguard_settings_3.png" alt="Step 3"></p>
+<ol start="4">
+<li>在下方设置域名的SSL证书设置（可以在 <code>docker-compose.yml</code> 文件中将证书文件映射到容器中，并在此设置证书），配置完路径会在页面中展示证书状态，点击保存配置按钮保存加密设置。</li>
+</ol>
+<p><img src="/assets/adguard_settings_4.png" alt="Step 4"></p>
+</div><div class="tags"><a href="/tags/Developer/"><i class="fa fa-tag"></i>Developer</a><a href="/tags/Linux/"><i class="fa fa-tag"></i>Linux</a></div><div class="post-nav"><a class="next" href="/2021/10/20/iOS%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95/">iOS的一些问题记录</a></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.google.com/search" method="get" accept-charset="utf-8" target="_blank"><input type="text" name="q" maxlength="20" placeholder="Search"/><input type="hidden" name="sitesearch" value="https://kano.love"/></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Git/">Git</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/iOS/">iOS</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/iOS/" style="font-size: 15px;">iOS</a> <a href="/tags/Developer/" style="font-size: 15px;">Developer</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/Git/" style="font-size: 15px;">Git</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2026/07/07/%E5%9C%A8%20Linux%20%E4%B8%AD%E4%BD%BF%E7%94%A8%20Adguard%20Home%20%E9%85%8D%E7%BD%AEDNS%20over%20HTTPS/">在 Linux 中使用 Adguard Home 配置DNS over HTTPS</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/10/20/iOS%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98%E8%AE%B0%E5%BD%95/">iOS的一些问题记录</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/04/13/%E5%85%B3%E4%BA%8EexportOptions.plist%E7%9A%84%E8%AF%B4%E6%98%8E/">关于exportOptions.plist的说明</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/03/15/%E7%AE%80%E6%98%93%E6%8C%87%E5%8D%97/">简易指南</a></li><li class="post-list-item"><a class="post-list-link" href="/2021/03/15/iOS%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%B2%99%E7%9B%92%E6%9C%BA%E5%88%B6/">iOS系统的沙盒机制</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="https://www.yuukizoom.top/" title="Yuuki" target="_blank">Yuuki</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2026 <a href="/." rel="nofollow">Yuuki.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=1.0.0" async></script><script type="text/javascript" src="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=1.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox/dist/jquery.fancybox.min.css"><script type="text/javascript" src="/js/copycode.js" successtext="复制成功!"></script><link rel="stylesheet" type="text/css" href="/css/copycode.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=1.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=1.0.0"></script></div></body></html>
